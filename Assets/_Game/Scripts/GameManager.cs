@@ -1,19 +1,24 @@
+using System;
 using UnityEngine;
 
 namespace Game
 {
     public class GameManager : MonoBehaviour
     {
+        [SerializeField] private GameInput _gameInput;
         [SerializeField] private Ball _ball;
         [SerializeField] private Transform[] _targets;
 
         private int _currentTargetIndex = 1;
         private int _direction = 1;
+        private const int DIRECTION_MODIFIER = -1;
 
         private void Start()
         {
             if (_targets.Length > 1)
             {
+                _gameInput.OnInvertDirection += GameInput_OnInvertDirection;
+
                 _ball.OnCollision += BallController_OnCollision;
                 var endPoint = CalculateEndPoint(_targets[_currentTargetIndex], _ball.transform);
                 _ball.SetMoveEndPoint(endPoint);
@@ -21,14 +26,25 @@ namespace Game
             }
         }
 
+        private void GameInput_OnInvertDirection()
+        {
+            _direction *= DIRECTION_MODIFIER;
+            SetBallMoveEndPoint();
+        }
+
         private void BallController_OnCollision(Collision collision)
         {
             if (collision.gameObject.transform == _targets[_currentTargetIndex])
             {
-                _currentTargetIndex = GetNextTargetIndex();
-                var target = _targets[_currentTargetIndex];
-                _ball.SetMoveEndPoint(CalculateEndPoint(target, _ball.transform));
+                SetBallMoveEndPoint();
             }
+        }
+
+        private void SetBallMoveEndPoint()
+        {
+            _currentTargetIndex = GetNextTargetIndex();
+            var target = _targets[_currentTargetIndex];
+            _ball.SetMoveEndPoint(CalculateEndPoint(target, _ball.transform));
         }
 
         private int GetNextTargetIndex()
