@@ -5,79 +5,114 @@ namespace Game
 {
     public class GameManager : MonoBehaviour
     {
-        [SerializeField] private GameInput _gameInput;
-        [SerializeField] private Ball _ball;
-        [SerializeField] private Transform[] _targets;
+        public static GameManager Instance { get; private set; }
 
-        private int _currentTargetIndex = 1;
-        private int _direction = 1;
-        private const int DIRECTION_MODIFIER = -1;
+        public Action OnStateChanged;
+        public Action OnScoreChanged;
+
+        private enum State
+        {
+            WaitingToStart,
+            GamePlaying,
+            GameOver,
+        }
+
+        [SerializeField] private GameInput _gameInput;
+        [SerializeField] private Ball _ballPrefab;
+        [SerializeField] private Transform _ballSpawnPoint;
+        [SerializeField] private PlatformsController _platformsController;
+
+        private State _state = State.WaitingToStart;
+        private int _score = 0;
+        private Ball _ball;
+
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         private void Start()
         {
-            if (_targets.Length > 1)
-            {
-                _gameInput.OnInvertDirection += GameInput_OnInvertDirection;
+            _gameInput.OnInvertDirection += GameInput_OnInvertDirection;
+        }
 
-                _ball.OnCollision += BallController_OnCollision;
-                var endPoint = CalculateEndPoint(_targets[_currentTargetIndex], _ball.transform);
-                _ball.SetMoveEndPoint(endPoint);
-                _ball.CanMove = true;
-            }
+        public void WaitToStart()
+        {
+            SetState(State.WaitingToStart);
+        }
+
+        public void StartGame()
+        {
+            _score = 0;
+            OnScoreChanged?.Invoke();
+
+            SetState(State.GamePlaying);
+
+            _ball = Instantiate(_ballPrefab, _ballSpawnPoint);
+            _ball.OnCollision += Ball_OnCollision;
+            SetBallNextPosition();
+            _ball.CanMove = true;
+
+            _platformsController.SetNextTargetPlatform();
+        }
+
+        public bool IsWaitingToStart()
+        {
+            return _state == State.WaitingToStart;
+        }
+
+        public bool IsGamePlaying()
+        {
+            return _state == State.GamePlaying;
+        }
+
+        public bool IsGameOver()
+        {
+            return _state == State.GameOver;
+        }
+
+        public int GetScore()
+        {
+            return _score;
         }
 
         private void GameInput_OnInvertDirection()
         {
-            _direction *= DIRECTION_MODIFIER;
-            SetBallMoveEndPoint();
+            if (!IsGamePlaying()) return;
+
+            _platformsController.InvertDirection();
+            SetBallNextPosition();
         }
 
-        private void BallController_OnCollision(Collision collision)
+        private void Ball_OnCollision(Transform collisionTransform)
         {
-            if (collision.gameObject.transform == _targets[_currentTargetIndex])
+            if (_platformsController.IsPlatform(collisionTransform))
             {
-                SetBallMoveEndPoint();
+                SetBallNextPosition();
+                if (_platformsController.IsTargetPlatform(collisionTransform))
+                {
+                    _score++;
+                    OnScoreChanged?.Invoke();
+                    _platformsController.SetNextTargetPlatform();
+                }
+            }
+            else
+            {
+                Destroy(_ball.gameObject);
+                SetState(State.GameOver);
             }
         }
 
-        private void SetBallMoveEndPoint()
+        private void SetBallNextPosition()
         {
-            _currentTargetIndex = GetNextTargetIndex();
-            var target = _targets[_currentTargetIndex];
-            _ball.SetMoveEndPoint(CalculateEndPoint(target, _ball.transform));
+            var nextPlatform = _platformsController.GetNextPlatform();
+            _ball.SetTargetPosition(nextPlatform);
         }
 
-        private int GetNextTargetIndex()
+        private void SetState(State newState)
         {
-            return (_currentTargetIndex + _direction + _targets.Length) % _targets.Length;
-        }
-
-        private Vector3 CalculateEndPoint(Transform target, Transform ball)
-        {
-            var targetCollider = target.GetComponent<CapsuleCollider>();
-            var ballCollider = ball.GetComponent<SphereCollider>();
-
-            if (targetCollider == null || ballCollider == null)
-            {
-                Debug.LogError("The required collider is missing");
-                return target.position;
-            }
-
-            var dirToBall = (ball.position - target.position).normalized;
-            var perpendicular = Vector3.ProjectOnPlane(dirToBall, target.up).normalized;
-
-            float targetRadius = targetCollider.radius * Mathf.Max(
-                target.lossyScale.x,
-                target.lossyScale.z);
-
-            float ballRadius = ballCollider.radius * Mathf.Max(
-                ball.lossyScale.x,
-                ball.lossyScale.y,
-                ball.lossyScale.z);
-
-            float pointOffset = targetRadius + ballRadius;
-
-            return target.position + perpendicular * pointOffset;
+            _state = newState;
+            OnStateChanged?.Invoke();
         }
     }
 }

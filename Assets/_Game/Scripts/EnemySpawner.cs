@@ -10,9 +10,17 @@ namespace Game
 
         private float _spawnTime;
         private int _lastSpawPointIndex;
+        private bool _isSpawning;
+
+        private void Start()
+        {
+            GameManager.Instance.OnStateChanged += GameManager_OnStateChanged;
+        }
 
         private void Update()
         {
+            if (!_isSpawning) return;
+
             _spawnTime -= Time.deltaTime;
 
             if (_spawnTime <= 0)
@@ -20,6 +28,14 @@ namespace Game
                 SpawnEnemy();
                 _spawnTime = _spawnDelay;
             }
+        }
+
+        private void GameManager_OnStateChanged()
+        {
+            if (GameManager.Instance.IsGamePlaying())
+                _isSpawning = true;
+            else
+                _isSpawning = false;
         }
 
         private void SpawnEnemy()
@@ -32,12 +48,6 @@ namespace Game
 
         private Transform GetSpawnPoint()
         {
-            if (_spawnPoints.Length == 0)
-            {
-                Debug.LogError("Spawn point is missing");
-                return null;
-            }
-
             int spawnPointIndex;
             do
             {
