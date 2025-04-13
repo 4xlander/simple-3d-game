@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60594b409b26b0f43b46fd322b6b9ccf, type: 3}
+  m_Name: AudioClipRefsSO
+  m_EditorClassIdentifier: 
+  Click: {fileID: 8300000, guid: 880f37005f9ae7c4a93ce8ccff92fe59, type: 3}
+  Rebound: {fileID: 8300000, guid: c1f8a007780fe5748a604b2e7dfa2430, type: 3}
+  Inversion: {fileID: 8300000, guid: 860a06e43dda53c4db2c9b564043df2b, type: 3}
+  Fail:
+  - {fileID: 8300000, guid: 0febbb4a8f3f125448ec85e4e382d773, type: 3}
+  - {fileID: 8300000, guid: d6c1649b88d0092468b80734e5e94245, type: 3}
+  ScoreCounter: {fileID: 8300000, guid: f0149e2a3d2da3742ac03ac1fa17fd4b, type: 3}
+  ScoreDisplaying: {fileID: 8300000, guid: 2c8fcd02a1bea2a409576b8ee9e86563, type: 3}

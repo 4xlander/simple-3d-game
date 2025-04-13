@@ -80,6 +80,7 @@ namespace Game
         {
             if (!IsGamePlaying()) return;
 
+            SoundManager.Instance.PlayInversionSound();
             _platformsController.InvertDirection();
             SetBallNextPosition();
         }
@@ -88,16 +89,19 @@ namespace Game
         {
             if (_platformsController.IsPlatform(collisionTransform))
             {
+                SoundManager.Instance.PlayReboundSound();
                 SetBallNextPosition();
                 if (_platformsController.IsTargetPlatform(collisionTransform))
                 {
                     _score++;
+                    SoundManager.Instance.PlayScoreCounterSound();
                     OnScoreChanged?.Invoke();
                     _platformsController.SetNextTargetPlatform();
                 }
             }
             else
             {
+                SoundManager.Instance.PlayFailSound();
                 Destroy(_ball.gameObject);
                 SetState(State.GameOver);
             }

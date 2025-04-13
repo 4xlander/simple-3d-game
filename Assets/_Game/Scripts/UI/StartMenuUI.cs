@@ -29,11 +29,13 @@ namespace Game
 
         private void StartButton_OnClick()
         {
+            SoundManager.Instance.PlayClickSound();
             GameManager.Instance.StartGame();
         }
 
         private void ExitButton_OnClick()
         {
+            SoundManager.Instance.PlayClickSound();
 #if UNITY_EDITOR
             EditorApplication.isPlaying = false;
 #else

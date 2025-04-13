@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,6 +28,7 @@ namespace Game
 
         private void MainMenuButton_OnClick()
         {
+            SoundManager.Instance.PlayClickSound();
             GameManager.Instance.WaitToStart();
         }
 
@@ -52,6 +54,13 @@ namespace Game
         private void Show()
         {
             gameObject.SetActive(true);
+            StartCoroutine(PlaySoundWithDelay());
+        }
+
+        private IEnumerator PlaySoundWithDelay()
+        {
+            yield return new WaitForSeconds(0.4f);
+            SoundManager.Instance.PlayScoreDisplayingSound();
         }
     }
 }
