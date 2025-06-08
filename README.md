@@ -1,1 +1,1 @@
-# test-corner-cross
+A simple 3D game made using basic primitives
